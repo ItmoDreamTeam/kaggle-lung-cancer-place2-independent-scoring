@@ -12,8 +12,6 @@ def transform(prob):
         return 0
 
 
-# key - id
-# value - probability
 # id -> probability
 def read_file(file_name, transformer=nothing_transform):
     dic = {}
