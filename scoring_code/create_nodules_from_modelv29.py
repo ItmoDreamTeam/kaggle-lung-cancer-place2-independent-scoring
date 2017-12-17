@@ -210,7 +210,7 @@ def aggregate_tta_preds(preds):
 	# result[1] = preds[:,1].min() #0 = nodule, 1 = no nodule.
 	# result[[2,3,4]] = preds[:,[2,3,4]].max() #categories of texture. 
 	
-DATA_DIR = r'F:\Flung\stage2\1mm'
+DATA_DIR = r'/home/kostya/Documents/dataset_1mm'
 
 if __name__ == '__main__':
 	from keras.models import load_model
@@ -219,7 +219,7 @@ if __name__ == '__main__':
 	from joblib import Parallel, delayed
 	import sys
 	import scipy
-	model = load_model(r"D:\Dlung\model_LUNA_64_v29_14.h5")
+	model = load_model(r"ensemble 1 models/model_LUNA_64_v29_14.h5")
 	from os.path import join
 	
 	train_files = [f for f in os.listdir(DATA_DIR)]
@@ -227,7 +227,7 @@ if __name__ == '__main__':
 	
 	VOXEL_SIZE = 64
 	model_batch_size=64
-	base_path = r'F:\Flung\stage2\v29_nodules'
+	base_path = r'/home/kostya/Documents/v29_nodules'
 	
 	for i,file in enumerate(train_files):
 		vox,cents,shapes = load_and_txform_file(file, model, VOXEL_SIZE, model_batch_size)

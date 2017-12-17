@@ -1,15 +1,12 @@
 import numpy as np # linear algebra
-import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
-import pydicom as dicom
+import dicom as dicom
 import os
 import scipy.ndimage
-import matplotlib.pyplot as plt
 from joblib import Parallel, delayed
 
-from skimage import measure, morphology
 # Load the scans in given folder path
-INPUT_FOLDER = r'F:\Flung\stage2\stage2'
-DATA_DIR = r'F:\Flung\stage2\1mm'
+INPUT_FOLDER = r'/home/kostya/Documents/dataset'
+DATA_DIR = r'/home/kostya/Documents/dataset_1mm'
 
 def load_scan(path):
 	slices = [dicom.read_file(os.path.join(path , s)) for s in os.listdir(path)]
