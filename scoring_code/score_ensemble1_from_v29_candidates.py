@@ -182,22 +182,22 @@ def looks_linear_init(shape, name=None,dim_ordering='th'):
                 q = np.concatenate([qsub, -1*qsub, q[:,-1:]],axis=1)
         return K.variable(q, name=name)
 
-model34 = load_model(r"D:\Dlung\model_LUNA_64_v34_describer_24.h5", custom_objects={'looks_linear_init':looks_linear_init})
-model_multi_relu = load_model(r"F:\Flung\descriptor models\model_des_v35_multi_64_24.h5")
-model34_repl = load_model(r"F:\Flung\descriptor models\model_des_v34_repl_64_24.h5")
-model35_relu = load_model(r"F:\Flung\descriptor models\model_des_v35_relu_64_24_multiout.h5")
-model_v36_mse_ft = load_model(r"F:\Flung\descriptor models\model_des_v36_mse_64_finetune_02.h5")
+model34 = load_model(r"/home/kostya/Documents/gusarova-code/scoring_code/ensemble 1 models/model_LUNA_64_v34_describer_24.h5", custom_objects={'looks_linear_init':looks_linear_init})
+model_multi_relu = load_model(r"/home/kostya/Documents/gusarova-code/scoring_code/ensemble 1 models/model_des_v35_multi_64_24.h5")
+model34_repl = load_model(r"/home/kostya/Documents/gusarova-code/scoring_code/ensemble 1 models/model_des_v34_repl_64_24.h5")
+model35_relu = load_model(r"/home/kostya/Documents/gusarova-code/scoring_code/ensemble 1 models/model_des_v35_relu_64_24_multiout.h5")
+model_v36_mse_ft = load_model(r"/home/kostya/Documents/gusarova-code/scoring_code/ensemble 1 models/model_des_v36_mse_64_finetune_02.h5")
 # model_v36_mse = load_model(r"F:\Flung\descriptor models\model_des_v36_mse_64_24.h5")
-model_v29 = load_model(r"F:\Flung\model_LUNA_64_v29_14.h5")
+model_v29 = load_model(r"/home/kostya/Documents/gusarova-code/scoring_code/ensemble 1 models/model_LUNA_64_v29_14.h5")
 
 #model_relu = load_model(r"F:\Flung\descriptor models\malig_only_v35_relu_b32.")
-model_sigmoid = load_model(r"F:\Flung\descriptor models\model_des_v35_sigmoid_64_24.h5")
-model_relu_s2 = load_model(r"F:\Flung\descriptor models\model_des_v35_relu_s2_64_24.h5")
+model_sigmoid = load_model(r"/home/kostya/Documents/gusarova-code/scoring_code/ensemble 1 models/model_des_v35_sigmoid_64_24.h5")
+model_relu_s2 = load_model(r"/home/kostya/Documents/gusarova-code/scoring_code/ensemble 1 models/model_des_v35_relu_s2_64_24.h5")
 
-all_files = [f for f in os.listdir(r'F:\Flung\stage2\1mm')]
+all_files = [f for f in os.listdir(r'/home/kostya/Documents/dataset_1mm')]
 all_features = []
 # all_targets = []
-base_path = r'F:\Flung\stage2\v29_nodules'
+base_path = r'/home/kostya/Documents/v29_nodules'
 import pandas as pd
 for i,patient in enumerate(all_files):
 	# print f
