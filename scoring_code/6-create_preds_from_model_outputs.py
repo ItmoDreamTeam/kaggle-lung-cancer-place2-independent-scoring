@@ -1,8 +1,6 @@
 from sklearn.base import BaseEstimator
-from sklearn.linear_model import LogisticRegression
-from sklearn.model_selection import cross_val_predict, StratifiedKFold
 from sklearn.ensemble import ExtraTreesRegressor as XTR
-import numpy as np
+
 class SlightlyNonlinearClassification(BaseEstimator):
 	
 	def __init__(self,C=10,step_size=0.7):
@@ -36,13 +34,13 @@ def process_ens2_sg1(names,labels):
 	ens2_models = []
 	ens2_columns = []
 
-	df_masses = pd.read_csv(r'F:\Flung\stage2\ensembling\stage1_masses_predictions.csv')
+	df_masses = pd.read_csv(r'/home/kostya/Documents/gusarova-code/scoring_code/old_res_files/stage1_masses_predictions.csv')
 	df_masses = df_masses.rename(columns={'patient_id':'id', 'prediction':'mass_pred'})
 
 	dfs_sg1 = []
 
 	for name in names:
-		dfs_sg1.append(pd.read_csv(r'F:\Flung\stage2\ensembling\model_features_stage1_' + name + '.csv'))
+		dfs_sg1.append(pd.read_csv(r'/home/kostya/Documents/gusarova-code/scoring_code/old_res_files/model_features_stage1_' + name + '.csv'))
 	#now we have one df per model
 	#create a set of predictions per model
 	#need to join on the target for this.
@@ -97,10 +95,10 @@ def process_ens2_sg1(names,labels):
 	
 	
 def process_ens1_sg1(labels):
-	df_ens1 = pd.read_csv(r"F:\Flung\stage2\ensembling\weighted_ensemble_v1_nodulesv29_stage1.csv")
+	df_ens1 = pd.read_csv(r"/home/kostya/Documents/gusarova-code/scoring_code/old_res_files/weighted_ensemble_v1_nodulesv29_stage1.csv")
 	df_ens1['id'] = df_ens1['patient'].apply(lambda x: x.split('_')[0])
 	
-	df_masses = pd.read_csv(r'F:\Flung\stage2\ensembling\stage1_masses_predictions.csv')
+	df_masses = pd.read_csv(r'/home/kostya/Documents/gusarova-code/scoring_code/old_res_files/stage1_masses_predictions.csv')
 	df_masses = df_masses.rename(columns={'patient_id':'id', 'prediction':'mass_pred'})
 	df_ens1 = pd.merge(left=df_ens1, right=df_masses, how='outer', on='id')
 	
@@ -132,9 +130,9 @@ def process_ens1_sg1(labels):
 def process_ens2_sg2(names, ens2_models, ens2_columns):
 	dfs_sg2 = []
 	for name in names:
-		dfs_sg2.append(pd.read_csv(r'F:\Flung\stage2\ensembling\model_features_stage2_' + name + '.csv'))
+		dfs_sg2.append(pd.read_csv(r'/home/kostya/Documents/gusarova-code/scoring_code/model_features_stage2_' + name + '.csv'))
 		
-	stg2_masses = pd.read_csv(r"F:\Flung\stage2\ensembling\stage2_masses_predictions.csv")
+	stg2_masses = pd.read_csv(r"/home/kostya/Documents/gusarova-code/scoring_code/stage2_masses_predictions.csv")
 	stg2_masses = stg2_masses.rename(columns={'patient_id':'id', 'prediction':'mass_pred'})
 	
 	df_stg2_ens2 = stg2_masses[['id']]
@@ -157,10 +155,10 @@ def process_ens2_sg2(names, ens2_models, ens2_columns):
 	
 	
 def process_ens1_sg2(ens1_model, ens1_cols):
-	df_ens1 = pd.read_csv(r"F:\Flung\stage2\ensembling\weighted_ensemble_v1_nodulesv29_stage2.csv")
+	df_ens1 = pd.read_csv(r"/home/kostya/Documents/gusarova-code/scoring_code/weighted_ensemble_v1_nodulesv29_stage2.csv")
 	df_ens1['id'] = df_ens1['patient'].apply(lambda x: x.split('_')[0])
 	
-	df_masses = pd.read_csv(r'F:\Flung\stage2\ensembling\stage2_masses_predictions.csv')
+	df_masses = pd.read_csv(r'/home/kostya/Documents/gusarova-code/scoring_code/stage2_masses_predictions.csv')
 	df_masses = df_masses.rename(columns={'patient_id':'id', 'prediction':'mass_pred'})
 	df_ens1 = pd.merge(left=df_ens1, right=df_masses, how='outer', on='id')
 	
@@ -183,8 +181,8 @@ def process_jul():
 		   u'mx2_15', u'crdy_15', u'crdx_15', u'mx_20', u'ch_20', u'cnt_20',
 		   u'med_20', u'wmx_20', u'crdz_20', u'mx2_20', u'crdy_20', u'crdx_20']
 	
-	jul_fs_trn = pd.read_csv(r"F:\Flung\stage2\ensembling\train_luna16_fs.csv")
-	jul_fs_test = pd.read_csv(r"F:\Flung\stage2\ensembling\submission_luna16_fs.csv")
+	jul_fs_trn = pd.read_csv(r"/home/kostya/Documents/gusarova-code/scoring_code/old_res_files/train_luna16_fs.csv")
+	jul_fs_test = pd.read_csv(r"/home/kostya/Documents/gusarova-code/scoring_code/old_res_files/submission_luna16_fs.csv")
 	assert all(jul_fs_trn.columns == jul_fs_test.columns)
 
 	Xfs = jul_fs_trn[jul_columns].values
@@ -199,8 +197,8 @@ def process_jul():
 	jul_fs_test['yh_fs'] = Yh_fs_test
 	# jul_fs = pd.concat([jul_fs_trn, jul_fs_test],1)
 	
-	jul_dsb1_trn = pd.read_csv(r"F:\Flung\stage2\ensembling\train_luna_posnegndsb_v1.csv")
-	jul_dsb1_test = pd.read_csv(r"F:\Flung\stage2\ensembling\submission_luna_posnegndsb_v1.csv")
+	jul_dsb1_trn = pd.read_csv(r"/home/kostya/Documents/gusarova-code/scoring_code/old_res_files/train_luna_posnegndsb_v1.csv")
+	jul_dsb1_test = pd.read_csv(r"/home/kostya/Documents/gusarova-code/scoring_code/old_res_files/submission_luna_posnegndsb_v1.csv")
 	assert all(jul_fs_trn.columns == jul_fs_test.columns)
 	Xdsb1 = jul_dsb1_trn[jul_columns].values
 	Ydsb1 = jul_dsb1_trn['cancer_label'].values
@@ -214,8 +212,8 @@ def process_jul():
 	jul_dsb1_test['yh_dsb1'] = Yh_dsb1_test
 	# jul_dsb1 = pd.concat([jul_dsb1_trn, jul_dsb1_test],1)
 	
-	jul_dsb2_trn = pd.read_csv(r"F:\Flung\stage2\ensembling\train_luna_posnegndsb_v2.csv")
-	jul_dsb2_test = pd.read_csv(r"F:\Flung\stage2\ensembling\submission_luna_posnegndsb_v2.csv")
+	jul_dsb2_trn = pd.read_csv(r"/home/kostya/Documents/gusarova-code/scoring_code/old_res_files/train_luna_posnegndsb_v2.csv")
+	jul_dsb2_test = pd.read_csv(r"/home/kostya/Documents/gusarova-code/scoring_code/old_res_files/submission_luna_posnegndsb_v2.csv")
 	assert all(jul_fs_trn.columns == jul_fs_test.columns)
 	Xdsb2 = jul_dsb2_trn[jul_columns].values
 	Ydsb2 = jul_dsb2_trn['cancer_label'].values
@@ -246,31 +244,29 @@ def process_jul():
 	jul_test['yh_jul'] = 0.5 * jul_test['yh_fs'] + 0.25 * jul_test['yh_dsb1']  + 0.25 * jul_test['yh_dsb2']
 	jul_test = jul_test[['patient_id', 'yh_jul']]
 	jul_test.to_csv('julian_preds_test.csv',index=False)
-	
-	
-ENS_FILES_DIR = r'F:\Flung\stage2\ensembling'
+
 
 if __name__ == '__main__':
 
 	import pandas as pd
 	import numpy as np
 	from sklearn.linear_model import LogisticRegression
-	from sklearn.calibration import CalibratedClassifierCV
-	from sklearn.model_selection import cross_val_predict, StratifiedKFold
+	from sklearn.model_selection import cross_val_predict
 	from sklearn.metrics import log_loss
 	from sklearn.ensemble import ExtraTreesClassifier as XT
 	np.random.seed(42)
 
-	labels = pd.read_csv(r"F:\Flung\stage2\stage1plus2_labels.csv")
+	labels = pd.read_csv(r"/home/kostya/Documents/gusarova-code/scoring_code/stage1plus2_labels.csv")
 	#expect as input 7 data frames
-	names = ['37', '37b', '37c', '37d', '37f', '37g', '38']
-	
+	# names = ['37', '37b', '37c', '37d', '37f', '37g', '38']
+	names = ['37', '37b', '37c', '37d', '37f', '37g']
+
 	process_jul()
-	
+
 	ens2_models, ens2_columns = process_ens2_sg1(names, labels)
-	
+
 	ens1_model, ens1_cols = process_ens1_sg1(labels)
-	
+
 	process_ens2_sg2(names, ens2_models, ens2_columns)
 
 	process_ens1_sg2(ens1_model, ens1_cols)
