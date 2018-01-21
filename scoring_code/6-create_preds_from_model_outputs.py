@@ -8,6 +8,7 @@ class SlightlyNonlinearClassification(BaseEstimator):
 		# self.xtr_params = xtr_params
 		self.step_size = step_size
 		self.C = C
+		self.classes_ = []
 		
 	def fit(self, X, y):
 		lr = LogisticRegression(C=self.C,penalty='l1')
@@ -60,8 +61,8 @@ def process_ens2_sg1(names,labels):
 		Y = df.loc[train_filter]['cancer'].values
 		# print X.shape, Y.shape
 		# lr = CalibratedClassifierCV(LogisticRegression(penalty='l1', C=10), method='sigmoid',cv=10)
-		# lr = LogisticRegression(penalty='l1', C=10000)
-		lr = SlightlyNonlinearClassification(C=10000, step_size=0.9)
+		lr = LogisticRegression(penalty='l1', C=10000)
+		# lr = SlightlyNonlinearClassification(C=10000, step_size=0.9)
 		Yh = cross_val_predict(lr, X, Y, cv=25, method='predict_proba',n_jobs=5)[:,1]
 		df.loc[train_filter, 'yh_' + name] = Yh
 		lr.fit(X,Y)
@@ -87,7 +88,7 @@ def process_ens2_sg1(names,labels):
 	df_ens2['yh_ens2'] = np.mean([df_ens2[c] for c in df_ens2.columns if c[:2] == 'yh'],axis=0)
 	
 	labels2 = pd.merge(labels,df_ens2, how='left', left_on='id',right_index=True)
-	print 'log loss ens2', log_loss(labels2['cancer'], labels2['yh_ens2'])
+	# print 'log loss ens2', log_loss(labels2['cancer'], labels2['yh_ens2'])
 
 	df_ens2 = df_ens2[['yh_ens2']]
 	df_ens2.to_csv('ens2_preds_stage1.csv')
@@ -108,8 +109,8 @@ def process_ens1_sg1(labels):
 	ens1_cols = df_ens1.drop(['id', 'cancer', 'patient'],1).columns
 	X = df_ens1.loc[train_filter][ens1_cols].values
 	Y = df_ens1.loc[train_filter]['cancer'].values
-	# ens1_lr = LogisticRegression(penalty='l1', C=10000)
-	ens1_lr = SlightlyNonlinearClassification(C=10, step_size=.2)
+	ens1_lr = LogisticRegression(penalty='l1', C=10000)
+	# ens1_lr = SlightlyNonlinearClassification(C=10, step_size=.2)
 	#ens1_lr = CalibratedClassifierCV(LogisticRegression(penalty='l1', C=10), method='sigmoid',cv=10)
 	Yh = cross_val_predict(ens1_lr, X, Y, cv=25, method='predict_proba',n_jobs=6)[:,1]
 	df_ens1.loc[train_filter, 'yh_ens1'] = Yh
@@ -124,7 +125,7 @@ def process_ens1_sg1(labels):
 	df_ens1 = df_ens1[['yh_ens1']]
 	df_ens1.to_csv('ens1_preds_stage1.csv')
 	labels2 = pd.merge(labels,df_ens1, how='left', left_on='id',right_index=True)
-	print 'log loss ens1', log_loss(labels2['cancer'], labels2['yh_ens1'])
+	# print 'log loss ens1', log_loss(labels2['cancer'], labels2['yh_ens1'])
 	return ens1_lr, ens1_cols
 	
 def process_ens2_sg2(names, ens2_models, ens2_columns):
