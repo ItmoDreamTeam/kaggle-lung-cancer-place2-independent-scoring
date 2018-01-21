@@ -48,7 +48,7 @@ def crop_img(img_cpy):
 		img[img>-300] = 255
 		img[img<-300] = 0
 		img = np.uint8(img)
-		contours, _ = cv2.findContours(img,cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)
+		_, contours, _ = cv2.findContours(img,cv2.RETR_LIST,cv2.CHAIN_APPROX_SIMPLE)
 		if len(contours) > 0:
 		
 
@@ -217,7 +217,7 @@ def load_and_txform_file(file,model,VOXEL_SIZE,batch_size,n_TTA=32):
 	return topNvox, topNcentroids, [x.shape] * topNcentroids.shape[0], topNpreds
 
 	
-DATA_DIR = r'F:\Flung\stage2\1mm'
+DATA_DIR = r'/home/kostya/Documents/dataset_1mm'
 
 if __name__ == '__main__':
 	from keras.models import load_model
@@ -226,7 +226,7 @@ if __name__ == '__main__':
 	from joblib import Parallel, delayed
 	import sys
 	import scipy
-	model = load_model(r"F:\Flung\nodule models\model_clf_v1_64_finetune_04.h5")
+	model = load_model(r"/home/kostya/Documents/gusarova-code/scoring_code/nodule models/model_clf_v1_64_finetune_04.h5")
 	from os.path import join
 	
 	train_files = [f for f in os.listdir(DATA_DIR)]
@@ -239,7 +239,7 @@ if __name__ == '__main__':
 	all_img_shapes = []
 	all_nodule_preds = []
 	#base_path = r'F:\Flung\nodule models\v1_nodules'
-	base_path = r'F:\Flung\stage2\v1_nodules'
+	base_path = r'/home/kostya/Documents/v1_nodules'
 	
 	for file in train_files:
 		

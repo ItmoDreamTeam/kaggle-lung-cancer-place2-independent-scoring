@@ -1,4 +1,3 @@
-#print 'loading models...'
 import os
 from scipy import ndimage
 import numpy as np
@@ -6,8 +5,6 @@ import sys
 import scipy
 from sklearn.cluster import DBSCAN
 import pandas as pd
-#from keras.models import load_model
-#from keras import backend as K
 
 def get_target(file):
 	return float(file.split('_')[1].replace('.npy',''))
@@ -102,7 +99,7 @@ def score_model(modelpath,name):
     #score a model on the train and test set
     from keras.models import load_model
     model = load_model(modelpath)
-    base = r'/home/ec2-user/data/v1_nodules'
+    base = r'/home/kostya/Documents/v1_nodules'
 
     files = [f.replace('vox_', '') for f in os.listdir(base) if 'vox_' in f]
     all_features = []
@@ -150,24 +147,24 @@ if __name__ == '__main__':
     from joblib import Parallel, delayed
     sys.setrecursionlimit(10000)
 
-    DATA_DIR = r'/home/ec2-user/data/'
+    DATA_DIR = r'/home/kostya/Documents/'
     import os
     #load the models
     if True:
-        model37g = os.path.join(DATA_DIR, "code", "models", "model_des_v37g_64_finetune_04.h5")
+        model37g = os.path.join(DATA_DIR, "gusarova-code", "scoring_code", "ensemble 2 models", "model_des_v37g_64_finetune_04.h5")
         print '37g'
-        model37b = os.path.join(DATA_DIR, "code", "models", "model_des_v37b_mse_64_finetune_04.h5")
+        model37b = os.path.join(DATA_DIR, "gusarova-code", "scoring_code", "ensemble 2 models", "model_des_v37b_mse_64_finetune_04.h5")
         print 'loaded 37b'
-        model37d = os.path.join(DATA_DIR, "code", "models", "model_des_v37d_64_finetune_04.h5")
+        model37d = os.path.join(DATA_DIR, "gusarova-code", "scoring_code", "ensemble 2 models", "model_des_v37d_64_finetune_04.h5")
         print '37d'
-        model37f = os.path.join(DATA_DIR, "code", "models", "model_des_v37f_64_finetune_04.h5")
+        model37f = os.path.join(DATA_DIR, "gusarova-code", "scoring_code", "ensemble 2 models", "model_des_v37f_64_finetune_04.h5")
         print '37f'
-        model38 = os.path.join(DATA_DIR, "code", "models", "model_des_v38_mse_64_finetune_04.h5")
+        model38 = os.path.join(DATA_DIR, "gusarova-code", "scoring_code", "ensemble 2 models", "model_des_v38_mse_64_finetune_04.h5")
         print '38'
         #from local
-        model37 = os.path.join(DATA_DIR, "code", "models", "model_des_v37_mse_64_finetune_04.h5")
+        model37 = os.path.join(DATA_DIR, "gusarova-code", "scoring_code", "ensemble 2 models", "model_des_v37_mse_64_finetune_04.h5")
         print '37'
-        model37c = os.path.join(DATA_DIR, "code", "models", "model_des_v37c_64_finetune_04.h5")
+        model37c = os.path.join(DATA_DIR, "gusarova-code", "scoring_code", "ensemble 2 models", "model_des_v37c_64_finetune_04.h5")
         print '37c'
 
         models = [model37, model37b, model37c,model37d,model37f,model38, model37g]
@@ -176,7 +173,7 @@ if __name__ == '__main__':
     else:
         #model37c = load_model(os.path.join(DATA_DIR, "code", "models", "model_des_v37c_64_finetune_04.h5"))
         print '37c'
-        models = [r'models/model_des_v37c_64_finetune_04.h5']#model37c, model37c]
+        models = [r'scoring_code/ensemble 2 models/model_des_v37c_64_finetune_04.h5']#model37c, model37c]
         names = ['test1'] #, 'test2']
 
 
