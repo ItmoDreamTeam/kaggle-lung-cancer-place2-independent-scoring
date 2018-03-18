@@ -1,3 +1,5 @@
-ROOT_DIR = 'W:/Projects/Lungs'
-DATASET_DIR = ROOT_DIR + '/dataset'
-TMP_DIR = ROOT_DIR + '/tmp'
+import os
+
+
+DATASET_DIR = os.environ.get('DATASET_DIR')
+TMP_DIR = os.environ.get('TMP_DIR')
