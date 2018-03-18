@@ -232,6 +232,8 @@ def aggregate_tta_preds(preds):
 
 
 if __name__ == '__main__':
+    os.mkdir(OUTPUT_BASE_PATH)
+
     from keras.models import load_model
     from sklearn.linear_model import LogisticRegression
     from sklearn.metrics import log_loss
