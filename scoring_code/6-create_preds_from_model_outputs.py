@@ -145,7 +145,14 @@ def process_ens2_sg2(names, ens2_models, ens2_columns):
         dfi['id'] = dfi['patient'].apply(lambda x: x.split('_')[0])
         dfi = pd.merge(dfi, stg2_masses, how='outer', on='id')
         X = dfi[colsi].values
+
+        print(X)
+        print(modeli.predict_proba(X))
+
         Yh = modeli.predict_proba(X)[:, 1]
+
+
+
         dfi['yh_' + namei] = Yh
         dfi = dfi[['id', 'yh_' + namei]]
         df_stg2_ens2 = pd.merge(df_stg2_ens2, dfi, how='outer', on='id')
