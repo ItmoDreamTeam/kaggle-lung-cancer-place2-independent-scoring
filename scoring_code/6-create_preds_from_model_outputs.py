@@ -134,7 +134,7 @@ def process_ens2_sg2(names, ens2_models, ens2_columns):
     for name in names:
         dfs_sg2.append(pd.read_csv('model_features_stage2_' + name + '.csv'))
 
-    stg2_masses = pd.read_csv(r"stage2_masses_predictions.csv")
+    stg2_masses = pd.read_csv(r"masses_predictions.csv")
     stg2_masses = stg2_masses.rename(columns={'patient_id': 'id', 'prediction': 'mass_pred'})
 
     df_stg2_ens2 = stg2_masses[['id']]
@@ -167,7 +167,7 @@ def process_ens1_sg2(ens1_model, ens1_cols):
     df_ens1 = pd.read_csv("weighted_ensemble_v1_nodulesv29_stage2.csv")
     df_ens1['id'] = df_ens1['patient'].apply(lambda x: x.split('_')[0])
 
-    df_masses = pd.read_csv(r'stage2_masses_predictions.csv')
+    df_masses = pd.read_csv(r'masses_predictions.csv')
     df_masses = df_masses.rename(columns={'patient_id': 'id', 'prediction': 'mass_pred'})
     df_ens1 = pd.merge(left=df_ens1, right=df_masses, how='outer', on='id')
 
@@ -265,7 +265,7 @@ if __name__ == '__main__':
 
     np.random.seed(42)
 
-    labels = pd.read_csv(r"stage1plus2_labels.csv")
+    labels = pd.read_csv(r"old_res_files/stage1plus2_labels.csv")
     # expect as input 7 data frames
     # names = ['37', '37b', '37c', '37d', '37f', '37g', '38']
     names = ['37', '37b', '37c', '37d', '37f', '37g']
