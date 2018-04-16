@@ -1,13 +1,12 @@
 import settings
-import numpy as np  # linear algebra
-import dicom as dicom
 import os
+import numpy as np
+import dicom as dicom
 import scipy.ndimage
 from joblib import Parallel, delayed
 
-# Load the scans in given folder path
 INPUT_FOLDER = settings.DATASET_DIR
-DATA_DIR = settings.TMP_DIR + '/dataset_1mm'
+DATA_DIR = settings.TMP_DIR + '/1mm'
 
 
 def load_scan(path):
@@ -26,13 +25,12 @@ def load_scan(path):
     if slice_thickness == 0:
         print 'image with zero slice thickness', path
         assert False
+
     ip0, ip1 = slices[0].ImagePositionPatient[:2]
     err_msg = False
     for s in slices:
         s.SliceThickness = slice_thickness
         assert s.ImagePositionPatient[0] == ip0 and s.ImagePositionPatient[1] == ip1, 'error'
-        # assert s.RescaleSlope == 1, 'non 1 slope'
-        # assert s.SliceLocation == s.ImagePositionPatient[2], 'weird image ' + path
         if 'SliceLocation' not in s or s.SliceLocation != s.ImagePositionPatient[2] and err_msg == False:
             print 'weird patient to QA', path
             err_msg = True
@@ -49,17 +47,9 @@ def load_scan(path):
 
 def get_pixels_hu(scans):
     image = np.stack([s.pixel_array * s.RescaleSlope + s.RescaleIntercept for s in scans], axis=2).astype(np.int16)
-
     # Set outside-of-scan pixels to 0
     # The intercept is usually -1024, so air is approximately 0
     image[image < -1990] = -1000
-
-    # Convert to Hounsfield units (HU)
-
-    # intercept = scans[0].RescaleIntercept
-    # print image.shape, image.dtype
-    # image += np.int16(intercept)
-
     return np.array(image)
 
 
@@ -67,41 +57,26 @@ def resample(image, scan, new_spacing=[1, 1, 1]):
     # Determine current pixel spacing
     spacing = map(float, (scan[0].PixelSpacing + [scan[0].SliceThickness]))
     spacing = np.array(list(spacing))
-    # print spacing
     resize_factor = spacing / new_spacing
     new_real_shape = image.shape * resize_factor
     new_shape = np.round(new_real_shape)
     real_resize_factor = new_shape / image.shape
     new_spacing = spacing / real_resize_factor
-    # print new_spacing, real_resize_factor
     image = scipy.ndimage.interpolation.zoom(image, real_resize_factor)
-
     return image, new_spacing
 
 
 def process_patient(patient):
-    # read, transform, save
-    # target= get_target_for(patient,tgt_lookup)
+    # read, transform and save
     scans = load_scan(os.path.join(INPUT_FOLDER, patient))  # matches last dimensions of px_raw
     px_raw = get_pixels_hu(scans)  # voxel
     px_rescaled, _ = resample(px_raw, scans, new_spacing=[1, 1, 1])
-
-    np.save(os.path.join(DATA_DIR, patient + '_testsg2.npy'), px_rescaled)
-
-
-def get_target_for(patient, tgt_lookup):
-    return 'testsg2'
+    np.save(os.path.join(DATA_DIR, patient + '.npy'), px_rescaled)
 
 
 if __name__ == '__main__':
-    os.mkdir(DATA_DIR)
-
+    if not os.path.exists(DATA_DIR):
+        os.mkdir(DATA_DIR)
     patients = os.listdir(INPUT_FOLDER)
     patients.sort()
-    # df = pd.read_csv(r"E:\lung\stage1_labels.csv")
-    # df = df.set_index('id')
-    # tgt_lookup = df['cancer'].to_dict()
-
     Parallel(n_jobs=8, verbose=1)(delayed(process_patient)(patient) for patient in patients)
-    # process_patient('b8bb02d229361a623a4dc57aa0e5c485', tgt_lookup)
-    # process_patient('00cba091fa4ad62cc3200a657aeb957e')
