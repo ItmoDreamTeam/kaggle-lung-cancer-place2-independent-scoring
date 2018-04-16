@@ -1,38 +1,21 @@
 import settings
-from scipy import ndimage
-import numpy as np
 import os
-import pdb
-import cPickle
+import numpy as np
+import pandas as pd
+from scipy import ndimage
+from keras import backend as K
 from keras.models import load_model
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import log_loss
-import sys
-import scipy
 from sklearn.cluster import DBSCAN
 
+DATA_DIR = settings.TMP_DIR + '/1mm'
 INPUT_BASE_PATH = settings.TMP_DIR + '/v29_nodules'
-DATA_DIR = settings.TMP_DIR + '/dataset_1mm'
-
-print 'loading candidates'
-
-
-def get_target(file):
-    return float(file.split('_')[1].replace('.npy', ''))
-
-
-def aggregate_predictions_for_patient(preds):
-    # todo
-    return
 
 
 def random_perturb(Xbatch, rotate=False):
-    # apply some random transformations...
+    # apply some random transformations
     swaps = np.random.choice([-1, 1], size=(Xbatch.shape[0], 3))
     Xcpy = Xbatch.copy()
     for i in range(Xbatch.shape[0]):
-        # (1,64,64,64)
-        # random
         Xcpy[i] = Xbatch[i, :, ::swaps[i, 0], ::swaps[i, 1], ::swaps[i, 2]]
         txpose = np.random.permutation([1, 2, 3])
         Xcpy[i] = np.transpose(Xcpy[i], tuple([0] + list(txpose)))
@@ -61,7 +44,7 @@ def get_loc_features(locs, malig_scores, sizes):
     num_clusters = np.max(dbs.labels_) + 1
     num_noise = (dbs.labels_ == -1).sum()
 
-    # new feature: sum of malig_scores but normalizing by cluster.
+    # new feature: sum of malig_scores but normalizing by cluster
     cluster_avgs = []
     for clusternum in range(num_clusters):
         cluster_avgs.append(malig_scores[dbs.labels_ == clusternum].mean())
@@ -71,7 +54,6 @@ def get_loc_features(locs, malig_scores, sizes):
         if clusterix == -1:
             cluster_avgs.append(malig)
 
-    weighted_sum_malig = np.sum(cluster_avgs)
     weighted_mean_malig = np.mean(cluster_avgs)
 
     # size of biggest cluster
@@ -97,7 +79,7 @@ def process_voxels(voxels, locs, sizes):
     maligs = []
 
     for tta_ix in range(n_TTA):
-        # generate normalized predictions for the multi output models...
+        # generate normalized predictions for the multi output models
         Yhats = []
         # NOTE THAT THE FT MODEL ADDED TWICE
         # this is because it was trained on the val set so we didn't use it in the weighted average
@@ -109,29 +91,28 @@ def process_voxels(voxels, locs, sizes):
         norm_ixs = [1, 3, 4, 5]
         for ix in norm_ixs:
             p = Yhats[ix]
-            # assert p[1].max() > 1 and p[2].max() > 1 and p[3].max() > 1
-            p[1] /= 5.0;
-            p[2] /= 5.0;
+            p[1] /= 5.0
+            p[2] /= 5.0
             p[3] /= 5.0
             Yhats[ix] = p
         p = Yhats[6]
-        assert len(p) > 4  # and p[1].max() <= 1 and p[2].max() <= 1 and p[3].max() <= 1
+        assert len(p) > 4
         Yhats[6] = p[:4]
-        # score the single output (malignancy only) models
 
+        # score the single output (malignancy only) models
         Yhats_single = []
         for model in [model_sigmoid, model_relu_s2]:
             Yhats_single.append(model.predict(random_perturb(voxels), batch_size=32))
+
         # normalize
         norm_ixs = [1]
         for ix in norm_ixs:
             p = Yhats_single[ix]
-            # assert p.max() > 1
             p /= 5.0
             Yhats_single[ix] = p
 
-        # ok. we've got all the predictions we need here. Let's compute our regressions for each output
-        # TODO: replace v36 with the fine tuned v36
+        # we've got all the predictions we need here
+        # let's compute our regressions for each output
         xdiam = np.concatenate([Yhats[0][0], Yhats[1][0], Yhats[2][0], Yhats[3][0],
                                 Yhats[5][0], Yhats[6][0]], axis=1)
         xlob = np.concatenate([Yhats[0][1], Yhats[1][1], Yhats[2][1], Yhats[3][1],
@@ -160,38 +141,26 @@ def process_voxels(voxels, locs, sizes):
     preds = np.stack([np.mean(diams, axis=0).ravel(), np.mean(lobs, axis=0).ravel(), np.mean(spics, axis=0).ravel(),
                       np.mean(maligs, axis=0).ravel()], axis=1)
 
-    xmax = np.max(preds, axis=0)  # taken over voxels.
+    xmax = np.max(preds, axis=0)  # taken over voxels
     xsd = np.std(preds, axis=0)
 
     location_feats = get_loc_features(locs, preds[:, 3], sizes)
     return np.concatenate([xmax, xsd, location_feats], axis=0)
 
 
-# voxels = np.load(sys.argv[1])
-# patients = np.load(sys.argv[1].replace('candidate_nodules', 'nodule_patient_map'))
-# locations = np.load(sys.argv[1].replace('candidate_nodules', 'nodule_locations'))
-# sizes = np.load(sys.argv[1].replace('candidate_nodules', 'img_shapes'))
-
-# assert voxels.shape[0] == patients.shape[0]
-
-# print 'loaded', voxels.shape[0], 'candidates'
-
-from keras import backend as K
-
-
-def looks_linear_init(shape, name=None, dim_ordering='th'):
+def looks_linear_init(shape, name=None):
     # conv weights are of shape: (output, input, x1, x2, x3)
-    # we want each output to be orthogonal...
+    # we want each output to be orthogonal
     flat_shape = (shape[0], np.prod(shape[1:]))
     assert shape[1] > 1
 
     a = np.random.normal(0.0, 1.0, flat_shape)
     u, _, v = np.linalg.svd(a, full_matrices=False)
-    # Pick the one with the correct shape.
+    # pick the one with the correct shape
     q = u if u.shape == flat_shape else v
     q = q.reshape(shape)
     q = q * 1.2  # gain
-    # now q is orthogonal and the right size.
+    # now q is orthogonal and the right size
     # make it look linear
     if shape[1] % 2 == 0:
         nover2 = shape[1] / 2
@@ -204,41 +173,32 @@ def looks_linear_init(shape, name=None, dim_ordering='th'):
     return K.variable(q, name=name)
 
 
-model34 = load_model("ensemble1/model_LUNA_64_v34_describer_24.h5",
-                     custom_objects={'looks_linear_init': looks_linear_init})
-model_multi_relu = load_model("ensemble1/model_des_v35_multi_64_24.h5")
-model34_repl = load_model("ensemble1/model_des_v34_repl_64_24.h5")
-model35_relu = load_model("ensemble1/model_des_v35_relu_64_24_multiout.h5")
-model_v36_mse_ft = load_model("ensemble1/model_des_v36_mse_64_finetune_02.h5")
-# model_v36_mse = load_model(r"F:\Flung\descriptor models\model_des_v36_mse_64_24.h5")
-model_v29 = load_model(r"ensemble1/model_LUNA_64_v29_14.h5")
+if __name__ == '__main__':
+    model34 = load_model(settings.MODEL_DIR + '/ensemble1/model_LUNA_64_v34_describer_24.h5',
+                         custom_objects={'looks_linear_init': looks_linear_init})
+    model_multi_relu = load_model(settings.MODEL_DIR + '/ensemble1/model_des_v35_multi_64_24.h5')
+    model34_repl = load_model(settings.MODEL_DIR + '/ensemble1/model_des_v34_repl_64_24.h5')
+    model35_relu = load_model(settings.MODEL_DIR + '/ensemble1/model_des_v35_relu_64_24_multiout.h5')
+    model_v36_mse_ft = load_model(settings.MODEL_DIR + '/ensemble1/model_des_v36_mse_64_finetune_02.h5')
+    model_v29 = load_model(settings.MODEL_DIR + '/ensemble1/model_LUNA_64_v29_14.h5')
 
-# model_relu = load_model(r"F:\Flung\descriptor models\malig_only_v35_relu_b32.")
-model_sigmoid = load_model(r"ensemble1/model_des_v35_sigmoid_64_24.h5")
-model_relu_s2 = load_model(r"ensemble1/model_des_v35_relu_s2_64_24.h5")
+    model_sigmoid = load_model(settings.MODEL_DIR + '/ensemble1/model_des_v35_sigmoid_64_24.h5')
+    model_relu_s2 = load_model(settings.MODEL_DIR + '/ensemble1/model_des_v35_relu_s2_64_24.h5')
 
-all_files = [f for f in os.listdir(DATA_DIR)]
-all_features = []
-import pandas as pd
+    all_files = [f for f in os.listdir(DATA_DIR)]
+    all_features = []
 
-for i, patient in enumerate(all_files):
-    # print f
+    for i, patient in enumerate(all_files):
+        patient_vox = np.load(os.path.join(INPUT_BASE_PATH, 'vox_' + patient))  # voxels[filter]
+        patient_locs = np.load(os.path.join(INPUT_BASE_PATH, 'cents_' + patient))
+        patient_sizes = np.load(os.path.join(INPUT_BASE_PATH, 'shapes_' + patient))
 
-    patient_vox = np.load(os.path.join(INPUT_BASE_PATH, 'vox_' + patient))  # voxels[filter]
-    patient_locs = np.load(os.path.join(INPUT_BASE_PATH, 'cents_' + patient))
-    patient_sizes = np.load(os.path.join(INPUT_BASE_PATH, 'shapes_' + patient))
+        print patient_vox.shape[0], 'nodules for patient', patient, 'number', i
+        features = process_voxels(patient_vox, patient_locs, patient_sizes)
 
-    print patient_vox.shape[0], 'nodules for patient', patient, 'number', i
-    features = process_voxels(patient_vox, patient_locs, patient_sizes)
-    # target = get_target(patient)
+        all_features.append(features)
+        X = np.stack(all_features)
 
-    all_features.append(features)
-    # all_targets.append(target)
-    X = np.stack(all_features)
-
-np.save('temp.npy', X)
-# _,modelname = os.path.split(sys.argv[2])
-modelname = 'weighted_ensemble_v1_nodulesv29_stage2'
-df = pd.DataFrame(data=X, index=all_files)
-df.index.name = 'patient'
-df.to_csv(modelname + '.csv')
+    df = pd.DataFrame(data=X, index=all_files)
+    df.index.name = 'patient'
+    df.to_csv(settings.TMP_DIR + '/ensemble1/weighted_ensemble_v1_nodules_v29.csv')
