@@ -135,7 +135,7 @@ if __name__ == '__main__':
     VOXEL_SIZE = 64
     model_batch_size = 64
 
-    model = load_model(settings.MODEL_DIR + 'ensemble1/model_LUNA_64_v29_14.h5')
+    model = load_model(settings.MODEL_DIR + '/ensemble1/model_LUNA_64_v29_14.h5')
     train_files = [f for f in os.listdir(DATA_DIR)]
 
     if not os.path.exists(OUTPUT_BASE_PATH):
