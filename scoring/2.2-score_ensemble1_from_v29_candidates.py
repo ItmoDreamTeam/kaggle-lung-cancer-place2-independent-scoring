@@ -148,7 +148,7 @@ def process_voxels(voxels, locs, sizes):
     return np.concatenate([xmax, xsd, location_feats], axis=0)
 
 
-def looks_linear_init(shape, name=None):
+def looks_linear_init(shape, name=None, dim_ordering='th'):
     # conv weights are of shape: (output, input, x1, x2, x3)
     # we want each output to be orthogonal
     flat_shape = (shape[0], np.prod(shape[1:]))
