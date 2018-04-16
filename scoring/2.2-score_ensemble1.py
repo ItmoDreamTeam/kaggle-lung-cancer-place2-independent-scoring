@@ -7,7 +7,6 @@ from keras import backend as K
 from keras.models import load_model
 from sklearn.cluster import DBSCAN
 
-INPUT_ALL_DIR = settings.TMP_DIR + '/1mm'
 INPUT_DIR = settings.TMP_DIR + '/v29_nodules'
 OUTPUT_DIR = settings.TMP_DIR + '/ensemble1'
 
@@ -189,7 +188,7 @@ if __name__ == '__main__':
     if not os.path.exists(OUTPUT_DIR):
         os.mkdir(OUTPUT_DIR)
 
-    all_files = [f for f in os.listdir(INPUT_ALL_DIR)]
+    all_files = [f for f in os.listdir(settings.TMP_DIR + '/1mm')]
     all_features = []
 
     for i, patient in enumerate(all_files):
