@@ -75,7 +75,8 @@ def get_loc_features(locs, malig_scores, sizes):
 def process_voxels(model, voxels, locs, sizes):
     # mapping from the set of voxels for a patient to a set of features
     n_TTA = 10
-    preds = list(np.concatenate(model.predict(voxels, batch_size=64), axis=1))
+    preds = []
+    preds.append(np.concatenate(model.predict(voxels, batch_size=64), axis=1))
 
     # parallelism for data augmentation
     for i in range(n_TTA):
@@ -128,10 +129,10 @@ if __name__ == '__main__':
     model37d = settings.MODEL_DIR + '/ensemble2/model_des_v37d_64_finetune_04.h5'
     model37f = settings.MODEL_DIR + '/ensemble2/model_des_v37f_64_finetune_04.h5'
     model37g = settings.MODEL_DIR + '/ensemble2/model_des_v37g_64_finetune_04.h5'
-    model38 = settings.MODEL_DIR + '/ensemble2/model_des_v38_mse_64_finetune_04.h5'
+    # model38 = settings.MODEL_DIR + '/ensemble2/model_des_v38_mse_64_finetune_04.h5'
 
-    models = [model37, model37b, model37c, model37d, model37f, model38, model37g]
-    names = ['37', '37b', '37c', '37d', '37f', '38', '37g']
+    models = [model37, model37b, model37c, model37d, model37f, model37g]
+    names = ['37', '37b', '37c', '37d', '37f', '37g']
     names = ['model_features_' + n for n in names]
 
     if not os.path.exists(OUTPUT_DIR):
