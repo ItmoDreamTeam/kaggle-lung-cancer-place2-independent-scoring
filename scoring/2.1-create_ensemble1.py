@@ -3,8 +3,8 @@ import os
 import numpy as np
 from keras.models import load_model
 
-DATA_DIR = settings.TMP_DIR + '/1mm'
-OUTPUT_BASE_PATH = settings.TMP_DIR + '/v29_nodules'
+INPUT_DIR = settings.TMP_DIR + '/1mm'
+OUTPUT_DIR = settings.TMP_DIR + '/v29_nodules'
 
 
 def find_start(arr, thresh=-800):
@@ -98,7 +98,7 @@ def get_interesting_ixs(preds):
 
 def load_and_txform_file(file, model, VOXEL_SIZE, batch_size):
     # read and convert to voxels
-    xorig = np.load(os.path.join(DATA_DIR, file))
+    xorig = np.load(os.path.join(INPUT_DIR, file))
     x = np.clip(xorig, -1000, 400)
     try:
         x = crop(x)
@@ -136,14 +136,14 @@ if __name__ == '__main__':
     model_batch_size = 64
 
     model = load_model(settings.MODEL_DIR + '/ensemble1/model_LUNA_64_v29_14.h5')
-    train_files = [f for f in os.listdir(DATA_DIR)]
+    train_files = [f for f in os.listdir(INPUT_DIR)]
 
-    if not os.path.exists(OUTPUT_BASE_PATH):
-        os.mkdir(OUTPUT_BASE_PATH)
+    if not os.path.exists(OUTPUT_DIR):
+        os.mkdir(OUTPUT_DIR)
 
     for i, file in enumerate(train_files):
         vox, cents, shapes = load_and_txform_file(file, model, VOXEL_SIZE, model_batch_size)
         print file, i, 'of', len(train_files), 'n_nod', vox.shape[0]
-        np.save(os.path.join(OUTPUT_BASE_PATH, 'vox_' + file), vox)
-        np.save(os.path.join(OUTPUT_BASE_PATH, 'cents_' + file), cents)
-        np.save(os.path.join(OUTPUT_BASE_PATH, 'shapes_' + file), np.array(shapes))
+        np.save(os.path.join(OUTPUT_DIR, 'vox_' + file), vox)
+        np.save(os.path.join(OUTPUT_DIR, 'cents_' + file), cents)
+        np.save(os.path.join(OUTPUT_DIR, 'shapes_' + file), np.array(shapes))

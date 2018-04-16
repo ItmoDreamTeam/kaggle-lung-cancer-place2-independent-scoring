@@ -4,8 +4,8 @@ import numpy as np
 import cv2
 from keras.models import load_model
 
-DATA_DIR = settings.TMP_DIR + '/1mm'
-OUTPUT_BASE_PATH = settings.TMP_DIR + '/v1_nodules'
+INPUT_DIR = settings.TMP_DIR + '/1mm'
+OUTPUT_DIR = settings.TMP_DIR + '/v1_nodules'
 
 
 def find_start(arr, thresh=.5):
@@ -157,7 +157,7 @@ def get_interesting_ixs(preds, thresh=1.5, max_ct=50):
 
 def load_and_txform_file(file, model, VOXEL_SIZE, batch_size, n_TTA=32):
     # read and convert to voxels
-    xorig = np.load(os.path.join(DATA_DIR, file))
+    xorig = np.load(os.path.join(INPUT_DIR, file))
     x = np.clip(xorig.copy(), -1000, 400)
     x, mask = crop_img(x)
 
@@ -179,16 +179,16 @@ if __name__ == '__main__':
     model_batch_size = 32
 
     model = load_model(settings.MODEL_DIR + '/nodule/model_clf_v1_64_finetune_04.h5')
-    train_files = [f for f in os.listdir(DATA_DIR)]
+    train_files = [f for f in os.listdir(INPUT_DIR)]
 
-    if not os.path.exists(OUTPUT_BASE_PATH):
-        os.mkdir(OUTPUT_BASE_PATH)
+    if not os.path.exists(OUTPUT_DIR):
+        os.mkdir(OUTPUT_DIR)
 
     for file in train_files:
         # return topNvox, topNcentroids, [x.shape] * topNcentroids.shape[0], topNpreds
         vox, cents, shapes, preds = load_and_txform_file(file, model, VOXEL_SIZE, batch_size=32, n_TTA=2)
-        np.save(os.path.join(OUTPUT_BASE_PATH, 'vox_' + file), vox)
-        np.save(os.path.join(OUTPUT_BASE_PATH, 'cents_' + file), cents)
-        np.save(os.path.join(OUTPUT_BASE_PATH, 'shapes_' + file), shapes)
-        np.save(os.path.join(OUTPUT_BASE_PATH, 'preds_' + file), preds)
+        np.save(os.path.join(OUTPUT_DIR, 'vox_' + file), vox)
+        np.save(os.path.join(OUTPUT_DIR, 'cents_' + file), cents)
+        np.save(os.path.join(OUTPUT_DIR, 'shapes_' + file), shapes)
+        np.save(os.path.join(OUTPUT_DIR, 'preds_' + file), preds)
         print file, vox.shape[0], 'nodules', preds.max(), 'max score'

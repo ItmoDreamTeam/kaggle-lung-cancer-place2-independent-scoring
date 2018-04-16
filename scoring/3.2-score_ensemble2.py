@@ -1,22 +1,9 @@
 import settings
 import os
-from scipy import ndimage
-import numpy as np
-import sys
-import scipy
-from sklearn.cluster import DBSCAN
 import pandas as pd
 
-INPUT_BASE_PATH = settings.TMP_DIR + '/v1_nodules'
-
-
-def get_target(file):
-    return float(file.split('_')[1].replace('.npy', ''))
-
-
-def aggregate_predictions_for_patient(preds):
-    # todo
-    return
+INPUT_DIR = settings.TMP_DIR + '/v1_nodules'
+OUTPUT_DIR = settings.TMP_DIR + '/ensemble2'
 
 
 def random_perturb(Xbatch, rotate=False):
@@ -112,17 +99,17 @@ def score_model(modelpath, name):
     from keras.models import load_model
     model = load_model(modelpath)
 
-    files = [f.replace('vox_', '') for f in os.listdir(INPUT_BASE_PATH) if 'vox_' in f]
+    files = [f.replace('vox_', '') for f in os.listdir(INPUT_DIR) if 'vox_' in f]
     all_features = []
     # all_targets = []
     for i, patient in enumerate(files):
         # print f
         # filter = (patients == patient)
 
-        patient_vox = np.load(os.path.join(INPUT_BASE_PATH, 'vox_' + patient))  # voxels[filter]
-        patient_locs = np.load(os.path.join(INPUT_BASE_PATH, 'cents_' + patient))  # locations[filter]
-        patient_sizes = np.load(os.path.join(INPUT_BASE_PATH, 'shapes_' + patient))  # sizes[filter]
-        patient_nodule_preds = np.load(os.path.join(INPUT_BASE_PATH, 'preds_' + patient))
+        patient_vox = np.load(os.path.join(INPUT_DIR, 'vox_' + patient))  # voxels[filter]
+        patient_locs = np.load(os.path.join(INPUT_DIR, 'cents_' + patient))  # locations[filter]
+        patient_sizes = np.load(os.path.join(INPUT_DIR, 'shapes_' + patient))  # sizes[filter]
+        patient_nodule_preds = np.load(os.path.join(INPUT_DIR, 'preds_' + patient))
         # TODO: try different thresholds.
 
         print patient_vox.shape[0], 'nodules for patient', patient, 'number', i, 'of', len(files), 'model', name

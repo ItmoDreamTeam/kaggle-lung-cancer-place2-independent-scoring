@@ -7,8 +7,9 @@ from keras import backend as K
 from keras.models import load_model
 from sklearn.cluster import DBSCAN
 
-DATA_DIR = settings.TMP_DIR + '/1mm'
-INPUT_BASE_PATH = settings.TMP_DIR + '/v29_nodules'
+INPUT_ALL_DIR = settings.TMP_DIR + '/1mm'
+INPUT_DIR = settings.TMP_DIR + '/v29_nodules'
+OUTPUT_DIR = settings.TMP_DIR + '/ensemble1'
 
 
 def random_perturb(Xbatch, rotate=False):
@@ -185,13 +186,16 @@ if __name__ == '__main__':
     model_sigmoid = load_model(settings.MODEL_DIR + '/ensemble1/model_des_v35_sigmoid_64_24.h5')
     model_relu_s2 = load_model(settings.MODEL_DIR + '/ensemble1/model_des_v35_relu_s2_64_24.h5')
 
-    all_files = [f for f in os.listdir(DATA_DIR)]
+    if not os.path.exists(OUTPUT_DIR):
+        os.mkdir(OUTPUT_DIR)
+
+    all_files = [f for f in os.listdir(INPUT_ALL_DIR)]
     all_features = []
 
     for i, patient in enumerate(all_files):
-        patient_vox = np.load(os.path.join(INPUT_BASE_PATH, 'vox_' + patient))  # voxels[filter]
-        patient_locs = np.load(os.path.join(INPUT_BASE_PATH, 'cents_' + patient))
-        patient_sizes = np.load(os.path.join(INPUT_BASE_PATH, 'shapes_' + patient))
+        patient_vox = np.load(os.path.join(INPUT_DIR, 'vox_' + patient))  # voxels[filter]
+        patient_locs = np.load(os.path.join(INPUT_DIR, 'cents_' + patient))
+        patient_sizes = np.load(os.path.join(INPUT_DIR, 'shapes_' + patient))
 
         print patient_vox.shape[0], 'nodules for patient', patient, 'number', i
         features = process_voxels(patient_vox, patient_locs, patient_sizes)
@@ -201,4 +205,4 @@ if __name__ == '__main__':
 
     df = pd.DataFrame(data=X, index=all_files)
     df.index.name = 'patient'
-    df.to_csv(settings.TMP_DIR + '/ensemble1/weighted_ensemble_v1_nodules_v29.csv')
+    df.to_csv(OUTPUT_DIR + '/weighted_ensemble1_nodules_v29.csv')

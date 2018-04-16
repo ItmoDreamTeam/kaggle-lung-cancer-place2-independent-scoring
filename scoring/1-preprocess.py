@@ -5,8 +5,8 @@ import dicom as dicom
 import scipy.ndimage
 from joblib import Parallel, delayed
 
-INPUT_FOLDER = settings.DATASET_DIR
-DATA_DIR = settings.TMP_DIR + '/1mm'
+INPUT_DIR = settings.DATASET_DIR
+OUTPUT_DIR = settings.TMP_DIR + '/1mm'
 
 
 def load_scan(path):
@@ -68,15 +68,15 @@ def resample(image, scan, new_spacing=[1, 1, 1]):
 
 def process_patient(patient):
     # read, transform and save
-    scans = load_scan(os.path.join(INPUT_FOLDER, patient))  # matches last dimensions of px_raw
+    scans = load_scan(os.path.join(INPUT_DIR, patient))  # matches last dimensions of px_raw
     px_raw = get_pixels_hu(scans)  # voxel
     px_rescaled, _ = resample(px_raw, scans, new_spacing=[1, 1, 1])
-    np.save(os.path.join(DATA_DIR, patient + '.npy'), px_rescaled)
+    np.save(os.path.join(OUTPUT_DIR, patient + '.npy'), px_rescaled)
 
 
 if __name__ == '__main__':
-    if not os.path.exists(DATA_DIR):
-        os.mkdir(DATA_DIR)
-    patients = os.listdir(INPUT_FOLDER)
+    if not os.path.exists(OUTPUT_DIR):
+        os.mkdir(OUTPUT_DIR)
+    patients = os.listdir(INPUT_DIR)
     patients.sort()
     Parallel(n_jobs=8, verbose=1)(delayed(process_patient)(patient) for patient in patients)
