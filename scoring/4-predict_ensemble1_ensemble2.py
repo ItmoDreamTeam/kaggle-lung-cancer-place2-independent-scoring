@@ -57,16 +57,16 @@ def process_ensemble2_train(names, labels):
         Xtest = df.loc[~train_filter][x_cols].values
         if Xtest.shape[0] > 0:
             df.loc[~train_filter, 'yh_' + name] = lr.predict_proba(Xtest)[:, 1]
-        else:
-            print 'found no missing labels for ens2 stage1. does this make sense?'
         df = df[['id', 'yh_' + name]]
         df_ens2 = pd.merge(df_ens2, df, how='outer', on='id')
+
     return ens2_models, ens2_columns
 
 
 def process_ensemble1(ensemble1_models, ensemble1_columns):
     df_ens1 = pd.read_csv(ENSEMBLE1_DIR + '/weighted_ensemble1_nodules_v29.csv')
     df_ens1['id'] = df_ens1['patient'].apply(lambda x: x.split('.')[0])
+    df_ens1['mass_pred'] = pd.Series(0, index=df_ens1.index)
 
     Xtest = df_ens1[ensemble1_columns].values
     Yh = ensemble1_models.predict_proba(Xtest)[:, 1]
@@ -86,10 +86,13 @@ def process_ensemble2(names, ensemble2_models, ensemble2_columns):
     for i, dfi, model, name, column in zip(range(7), dfs, ensemble2_models, names, ensemble2_columns):
         dfi = dfi.rename(columns={dfi.columns[0]: 'patient'})
         dfi['id'] = dfi['patient'].apply(lambda x: x.split('_')[0])
+        dfi['mass_pred'] = pd.Series(0, index=dfi.index)
+
         X = dfi[column].values
         Yh = model.predict_proba(X)[:, 1]
         dfi['yh_' + name] = Yh
         dfi = dfi[['id', 'yh_' + name]]
+
         if df_ens2 is None:
             df_ens2 = dfi
         else:
@@ -97,7 +100,7 @@ def process_ensemble2(names, ensemble2_models, ensemble2_columns):
 
     df_ens2['yh_ens2'] = np.mean([df_ens2[c] for c in df_ens2.columns if c[:2] == 'yh'], axis=0)
     df_ens2 = df_ens2[['id', 'yh_ens2']]
-    df_ens2.to_csv(ENSEMBLE2_DIR + 'predictions.csv')
+    df_ens2.to_csv(ENSEMBLE2_DIR + '/predictions.csv')
 
 
 if __name__ == '__main__':
