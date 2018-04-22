@@ -9,9 +9,9 @@ if __name__ == '__main__':
     dh_ens2 = pd.read_csv(ENSEMBLE2_DIR + '/predictions.csv')
 
     df = dh_ens1
-    df = pd.merge(left=df, right=dh_ens2, how='inner', left_on='patient_id', right_on='id')
+    df = pd.merge(left=df, right=dh_ens2, how='inner', left_on='id', right_on='id')
 
     df['cancer'] = 0.7 * df['yh_ens1'] + 0.3 * df['yh_ens2']
-    df['id'] = df['patient_id']
+    # df['id'] = df['patient_id']
     df = df[['id', 'cancer']]
     df.to_csv(settings.TMP_DIR + '/final_predictions.csv')

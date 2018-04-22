@@ -85,7 +85,7 @@ def process_ensemble2(names, ensemble2_models, ensemble2_columns):
     df_ens2 = None
     for i, dfi, model, name, column in zip(range(7), dfs, ensemble2_models, names, ensemble2_columns):
         dfi = dfi.rename(columns={dfi.columns[0]: 'patient'})
-        dfi['id'] = dfi['patient'].apply(lambda x: x.split('_')[0])
+        dfi['id'] = dfi['patient'].apply(lambda x: x.split('.')[0])
         dfi['mass_pred'] = pd.Series(0, index=dfi.index)
 
         X = dfi[column].values
